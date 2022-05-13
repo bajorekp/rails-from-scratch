@@ -10,13 +10,22 @@ begin
       loop do
         puts "Thread #{pool_id} is wating for user..."
         client = socket.accept
-        puts "Hi user! I'm waiting for your message"
-
+        puts "Hi user! I'm waiting for your message..."
+    
         begin
           client_id = client.to_i
-          request = client.gets
-          puts "Request from ##{client_id}: #{request}"
-          client.puts "Hello"
+          # get only the first line of the request but you can do more
+          request = client.gets.chomp
+          method, path, http_version = request.split(' ')
+          puts "Method: #{method}, Path: #{path}, HTTP Version: #{http_version}"
+          response = if path == '/hi'
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 13\r\n\r\n{\"foo\": \"hi\"}"
+          else
+            "HTTP/1.1 404 OK\r\nContent-Type: application/json\r\nContent-Length: 22\r\n\r\n{\"error\": \"not_found\"}"
+          end
+          # Log the request
+          puts "Request from ##{client_id}: #{request}\nResponse for ##{client_id}: #{response}"
+          client.print response
         ensure
           client.close
         end
